@@ -181,34 +181,58 @@
         @media (max-width: 900px) {
             body {
                 flex-direction: column;
-                overflow: auto;
+                overflow-y: auto;
+                height: auto;
             }
 
             .left-panel {
                 flex: none;
-                min-height: 300px;
-                padding: 30px 20px;
+                min-height: auto;
+                padding: 50px 20px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             }
 
             .right-panel {
-                flex: none;
-                min-height: 600px;
+                flex: 1;
+                min-height: auto;
                 padding: 40px 20px;
-                justify-content: flex-start;
+                background-color: #f8fafc;
+            }
+
+            .logo-image {
+                max-width: 200px;
+                margin-bottom: 20px;
+            }
+
+            .welcome-text {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+
+            .welcome-subtext {
+                font-size: 14px;
+                max-width: 320px;
+                margin: 0 auto;
             }
 
             .login-card {
-                box-shadow: none;
-                border: none;
-                padding: 20px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                border: 1px solid rgba(0, 0, 0, 0.05);
+                padding: 30px 25px;
+                border-radius: 16px;
+                background: white;
             }
 
             .right-header {
                 display: none;
             }
 
-            .logo-image {
-                max-width: 80%;
+            .copyright-text {
+                position: relative;
+                bottom: auto;
+                margin-top: 40px;
+                color: #64748b;
+                text-align: center;
             }
         }
     </style>
@@ -221,9 +245,6 @@
             <div class="welcome-text">Anantapur Book Centre ERP</div>
             <div class="welcome-subtext">Manage your institutional inventory, staff registry, and financial analytics
                 from one secure, centralized dashboard.</div>
-        </div>
-        <div class="copyright-text">
-            © 2026 Anantapur Book Centre. All Rights Reserved.
         </div>
     </div>
 
@@ -259,6 +280,10 @@
 
                 <button type="submit" class="login-btn">Secure Login</button>
             </form>
+        </div>
+
+        <div class="copyright-text">
+            © 2026 Anantapur Book Centre. All Rights Reserved.
         </div>
     </div>
 </body>
