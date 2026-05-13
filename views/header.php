@@ -24,8 +24,9 @@
             left: 0;
             top: 0;
             border-right: 1px solid #d1d9e6;
-            z-index: 100;
+            z-index: 1000;
             overflow-y: auto;
+            transition: transform 0.3s ease;
         }
 
         .header {
@@ -39,7 +40,7 @@
             display: flex;
             align-items: center;
             padding: 0 20px;
-            z-index: 90;
+            z-index: 900;
         }
 
         .main-content {
@@ -49,13 +50,44 @@
             padding-right: 40px;
         }
 
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .header {
+                left: 0;
+                padding: 0 15px;
+            }
+            .main-content {
+                margin-left: 0;
+                padding-left: 15px;
+                padding-right: 15px;
+                padding-top: 70px;
+            }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 950;
+            }
+            .mobile-overlay.show {
+                display: block;
+            }
+        }
+
         .nav-item {
             display: flex;
             align-items: center;
-            padding: 14px 20px; /* Slightly more padding */
-            color: #1a202c; /* Darker text */
+            padding: 14px 20px;
+            color: #1a202c;
             font-size: 14px;
-            font-weight: 500; /* Bolder */
+            font-weight: 500;
             border-bottom: 1px solid #f0f0f0;
             transition: all 0.2s;
         }
@@ -200,13 +232,21 @@
 </head>
 
 <body>
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
     <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="logo-area">
-            <div class="w-10 h-10 bg-[#800000] rounded-xl flex items-center justify-center text-white text-xl shadow-lg shadow-red-900/20">
-                <i class="fa-solid fa-book-open-reader"></i>
+    <aside id="sidebar" class="sidebar">
+        <div class="logo-area flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-[#800000] rounded-xl flex items-center justify-center text-white text-xl shadow-lg shadow-red-900/20">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                </div>
+                <span class="logo-text">ABC ERP</span>
             </div>
-            <span class="logo-text">ABC ERP</span>
+            <button onclick="toggleSidebar()" class="md:hidden text-gray-500 hover:text-[#800000]">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
         </div>
 
         <nav class="mt-2">
@@ -279,6 +319,11 @@
     </aside>
 
     <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('mobile-overlay').classList.toggle('show');
+        }
+
         function toggleSubmenu(id, element) {
             const submenu = document.getElementById(id);
             const chevron = element.querySelector('.chevron');
@@ -295,8 +340,10 @@
 
     <!-- Header -->
     <header class="header">
-        <i class="fa-solid fa-bars text-lg text-gray-600 cursor-pointer"></i>
-        <div class="search-bar">
+        <button onclick="toggleSidebar()" class="md:hidden mr-4 text-[#800000]">
+            <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+        <div class="search-bar hidden lg:flex">
             <i class="fa-solid fa-magnifying-glass text-[#0056b3]"></i>
             <input type="text" placeholder="Search across modules...">
         </div>
