@@ -1,0 +1,8 @@
+node_modules/
+.next/
+vendor/
+composer.phar
+.env
+*.log
+data/
+public/uploads/attendance/
