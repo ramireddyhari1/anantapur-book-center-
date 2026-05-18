@@ -151,19 +151,19 @@ $settledDues = $db->fetch("SELECT SUM(amount) as total FROM \"Expense\" WHERE st
                 <!-- Optional File Upload -->
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Attachment <span class="text-gray-400 normal-case font-normal">(Optional)</span></label>
-                    <label id="dropZone" class="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg px-3 py-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all">
+                    <div id="dropZone" onclick="document.getElementById('expenseFile').click()" class="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg px-3 py-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all">
                         <div id="uploadPlaceholder" class="flex flex-col items-center gap-1">
                             <i class="fa-solid fa-cloud-arrow-up text-xl text-gray-400"></i>
                             <span class="text-xs text-gray-500">Click to upload or drag & drop</span>
                             <span class="text-[10px] text-gray-400">PDF, Image, Excel, Word — Max 10MB</span>
                         </div>
-                        <div id="uploadFileInfo" class="hidden flex items-center gap-2 text-sm">
+                        <div id="uploadFileInfo" style="display:none" class="items-center gap-2 text-sm">
                             <i class="fa-solid fa-file text-blue-500"></i>
                             <span id="uploadFileName" class="text-gray-700 font-medium"></span>
                             <button type="button" onclick="clearFile(event)" class="text-red-400 hover:text-red-600 ml-1"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-                        <input type="file" name="attachment" id="expenseFile" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.doc,.docx,.csv">
-                    </label>
+                    </div>
+                    <input type="file" name="attachment" id="expenseFile" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.doc,.docx,.csv">
                 </div>
             </div>
 
@@ -207,9 +207,8 @@ dropZone.addEventListener('drop', function(e) {
 });
 
 function showFile(name) {
-    placeholder.classList.add('hidden');
-    fileInfo.classList.remove('hidden');
-    fileInfo.classList.add('flex');
+    placeholder.style.display = 'none';
+    fileInfo.style.display = 'flex';
     fileName.textContent = name;
 }
 
@@ -217,8 +216,7 @@ function clearFile(e) {
     e.preventDefault();
     e.stopPropagation();
     fileInput.value = '';
-    placeholder.classList.remove('hidden');
-    fileInfo.classList.add('hidden');
-    fileInfo.classList.remove('flex');
+    placeholder.style.display = 'flex';
+    fileInfo.style.display = 'none';
 }
 </script>
