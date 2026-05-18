@@ -293,10 +293,11 @@
                 </div>
             </div>
 
-            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
             <a href="index.php?page=expenses" class="nav-item <?= ($page === 'expenses' ? 'active' : '') ?>">
                 <i class="fa-solid fa-credit-card"></i> Expenses Ledger
             </a>
+
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
             <a href="index.php?page=analytics" class="nav-item <?= ($page === 'analytics' ? 'active' : '') ?>">
                 <i class="fa-solid fa-chart-pie"></i> Analytics
             </a>

@@ -44,6 +44,7 @@ $db->query("CREATE TABLE IF NOT EXISTS \"AttendanceSettings\" (
 
 $db->query("CREATE TABLE IF NOT EXISTS \"Expense\" (
     \"id\" TEXT PRIMARY KEY,
+    \"userId\" TEXT,
     \"date\" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     \"description\" TEXT,
     \"category\" TEXT,
@@ -53,8 +54,9 @@ $db->query("CREATE TABLE IF NOT EXISTS \"Expense\" (
     \"attachment\" TEXT
 )");
 
-// Migration: Add attachment column if it doesn't exist
-try { $db->query("ALTER TABLE \"Expense\" ADD COLUMN \"attachment\" TEXT"); } catch (Exception $e) { /* column already exists */ }
+// Migration: Add columns if they don't exist
+try { $db->query("ALTER TABLE \"Expense\" ADD COLUMN \"attachment\" TEXT"); } catch (Exception $e) {}
+try { $db->query("ALTER TABLE \"Expense\" ADD COLUMN \"userId\" TEXT"); } catch (Exception $e) {}
 
 $db->query("CREATE TABLE IF NOT EXISTS \"Task\" (
     \"id\" TEXT PRIMARY KEY,
@@ -284,7 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'update_attendance_settin
 
 // Handle Expense Add
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'expense_add') {
-    if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+    if (isset($_SESSION['user_id'])) {
         $attachmentName = null;
 
         // Handle optional file upload
@@ -296,8 +298,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'expense_add') {
             move_uploaded_file($_FILES['attachment']['tmp_name'], $uploadDir . $attachmentName);
         }
 
-        $db->query("INSERT INTO \"Expense\" (id, description, category, amount, \"voucherNo\", attachment) VALUES (?, ?, ?, ?, ?, ?)", [
+        $db->query("INSERT INTO \"Expense\" (id, \"userId\", description, category, amount, \"voucherNo\", attachment) VALUES (?, ?, ?, ?, ?, ?, ?)", [
             uniqid('exp_'),
+            $_SESSION['user_id'],
             $_POST['description'],
             $_POST['category'],
             (float)$_POST['amount'],
@@ -527,7 +530,6 @@ switch ($page) {
     case 'purchases':
     case 'ledger':
     case 'gst_reports':
-    case 'expenses':
     case 'analytics':
     case 'tools':
     case 'upload':
@@ -537,6 +539,9 @@ switch ($page) {
             include __DIR__ . "/../views/{$page}.php";
             if ($page === 'invoice_print') exit;
         }
+        break;
+    case 'expenses':
+        include __DIR__ . '/../views/expenses.php';
         break;
     case 'staff':
         include __DIR__ . '/../views/staff.php';
