@@ -49,8 +49,12 @@ $db->query("CREATE TABLE IF NOT EXISTS \"Expense\" (
     \"category\" TEXT,
     \"amount\" DOUBLE PRECISION DEFAULT 0,
     \"status\" TEXT DEFAULT 'settled',
-    \"voucherNo\" TEXT
+    \"voucherNo\" TEXT,
+    \"attachment\" TEXT
 )");
+
+// Migration: Add attachment column if it doesn't exist
+try { $db->query("ALTER TABLE \"Expense\" ADD COLUMN \"attachment\" TEXT"); } catch (Exception $e) { /* column already exists */ }
 
 $db->query("CREATE TABLE IF NOT EXISTS \"Task\" (
     \"id\" TEXT PRIMARY KEY,
@@ -281,12 +285,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'update_attendance_settin
 // Handle Expense Add
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'expense_add') {
     if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
-        $db->query("INSERT INTO \"Expense\" (id, description, category, amount, \"voucherNo\") VALUES (?, ?, ?, ?, ?)", [
+        $attachmentName = null;
+
+        // Handle optional file upload
+        if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/uploads/expenses/';
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+            $ext = pathinfo($_FILES['attachment']['name'], PATHINFO_EXTENSION);
+            $attachmentName = 'exp_' . time() . '_' . uniqid() . '.' . $ext;
+            move_uploaded_file($_FILES['attachment']['tmp_name'], $uploadDir . $attachmentName);
+        }
+
+        $db->query("INSERT INTO \"Expense\" (id, description, category, amount, \"voucherNo\", attachment) VALUES (?, ?, ?, ?, ?, ?)", [
             uniqid('exp_'),
             $_POST['description'],
             $_POST['category'],
             (float)$_POST['amount'],
-            $_POST['voucherNo'] ?? ('V-' . time())
+            $_POST['voucherNo'] ?? ('V-' . time()),
+            $attachmentName
         ]);
         header("Location: index.php?page=expenses&status=success");
         exit;

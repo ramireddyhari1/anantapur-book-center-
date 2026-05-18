@@ -70,6 +70,7 @@ $settledDues = $db->fetch("SELECT SUM(amount) as total FROM \"Expense\" WHERE st
                         <th class="px-6 py-3 font-semibold">Description</th>
                         <th class="px-6 py-3 font-semibold">Category</th>
                         <th class="px-6 py-3 font-semibold">Amount</th>
+                        <th class="px-6 py-3 font-semibold text-center">File</th>
                         <th class="px-6 py-3 font-semibold text-center">Status</th>
                     </tr>
                 </thead>
@@ -85,13 +86,22 @@ $settledDues = $db->fetch("SELECT SUM(amount) as total FROM \"Expense\" WHERE st
                             </td>
                             <td class="px-6 py-4 font-bold text-gray-900">₹<?= number_format($exp['amount'], 2) ?></td>
                             <td class="px-6 py-4 text-center">
+                                <?php if (!empty($exp['attachment'])): ?>
+                                <a href="/uploads/expenses/<?= htmlspecialchars($exp['attachment']) ?>" target="_blank" class="text-blue-500 hover:text-blue-700" title="<?= htmlspecialchars($exp['attachment']) ?>">
+                                    <i class="fa-solid fa-paperclip text-lg"></i>
+                                </a>
+                                <?php else: ?>
+                                <span class="text-gray-300"><i class="fa-solid fa-minus"></i></span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-6 py-4 text-center">
                                 <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase"><?= htmlspecialchars($exp['status']) ?></span>
                             </td>
                         </tr>
                         <?php endforeach;
                     else: ?>
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-400">
                                 <i class="fa-solid fa-folder-open text-3xl mb-3"></i>
                                 <p class="text-sm">No expenses recorded yet.</p>
                             </td>
@@ -106,7 +116,7 @@ $settledDues = $db->fetch("SELECT SUM(amount) as total FROM \"Expense\" WHERE st
 <!-- Add Expense Modal -->
 <div id="expenseModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-        <form action="index.php?page=expense_add" method="POST" class="p-6">
+        <form action="index.php?page=expense_add" method="POST" enctype="multipart/form-data" class="p-6">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold text-gray-800">Add New Expense</h3>
                 <button type="button" onclick="document.getElementById('expenseModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -137,6 +147,24 @@ $settledDues = $db->fetch("SELECT SUM(amount) as total FROM \"Expense\" WHERE st
                         <input type="text" name="voucherNo" placeholder="Optional" class="w-full border rounded-lg px-3 py-2 outline-none focus:border-blue-500">
                     </div>
                 </div>
+
+                <!-- Optional File Upload -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Attachment <span class="text-gray-400 normal-case font-normal">(Optional)</span></label>
+                    <label id="dropZone" class="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg px-3 py-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all">
+                        <div id="uploadPlaceholder" class="flex flex-col items-center gap-1">
+                            <i class="fa-solid fa-cloud-arrow-up text-xl text-gray-400"></i>
+                            <span class="text-xs text-gray-500">Click to upload or drag & drop</span>
+                            <span class="text-[10px] text-gray-400">PDF, Image, Excel, Word — Max 10MB</span>
+                        </div>
+                        <div id="uploadFileInfo" class="hidden flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-file text-blue-500"></i>
+                            <span id="uploadFileName" class="text-gray-700 font-medium"></span>
+                            <button type="button" onclick="clearFile(event)" class="text-red-400 hover:text-red-600 ml-1"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <input type="file" name="attachment" id="expenseFile" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.doc,.docx,.csv">
+                    </label>
+                </div>
             </div>
 
             <button type="submit" class="w-full bg-[#800000] text-white py-4 rounded-xl font-bold mt-8 shadow-lg shadow-red-900/20 hover:bg-red-900 transition-all">
@@ -145,3 +173,52 @@ $settledDues = $db->fetch("SELECT SUM(amount) as total FROM \"Expense\" WHERE st
         </form>
     </div>
 </div>
+
+<script>
+const fileInput = document.getElementById('expenseFile');
+const dropZone = document.getElementById('dropZone');
+const placeholder = document.getElementById('uploadPlaceholder');
+const fileInfo = document.getElementById('uploadFileInfo');
+const fileName = document.getElementById('uploadFileName');
+
+fileInput.addEventListener('change', function() {
+    if (this.files.length > 0) {
+        showFile(this.files[0].name);
+    }
+});
+
+dropZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.classList.add('border-blue-400', 'bg-blue-50/50');
+});
+
+dropZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.classList.remove('border-blue-400', 'bg-blue-50/50');
+});
+
+dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('border-blue-400', 'bg-blue-50/50');
+    if (e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        showFile(e.dataTransfer.files[0].name);
+    }
+});
+
+function showFile(name) {
+    placeholder.classList.add('hidden');
+    fileInfo.classList.remove('hidden');
+    fileInfo.classList.add('flex');
+    fileName.textContent = name;
+}
+
+function clearFile(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInput.value = '';
+    placeholder.classList.remove('hidden');
+    fileInfo.classList.add('hidden');
+    fileInfo.classList.remove('flex');
+}
+</script>

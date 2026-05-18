@@ -63,7 +63,8 @@ $schema = [
         \"category\" TEXT,
         \"amount\" DOUBLE PRECISION DEFAULT 0,
         \"status\" TEXT DEFAULT 'settled',
-        \"voucherNo\" TEXT
+        \"voucherNo\" TEXT,
+        \"attachment\" TEXT
     )",
     "CREATE TABLE IF NOT EXISTS \"Task\" (
         \"id\" TEXT PRIMARY KEY,
