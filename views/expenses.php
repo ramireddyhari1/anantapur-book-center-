@@ -122,9 +122,9 @@ if ($isAdmin) {
                             </td>
                             <?php if ($isAdmin): ?>
                             <td class="px-6 py-4 text-center">
-                                <a href="index.php?page=expense_delete&id=<?= $exp['id'] ?>" onclick="return confirm('Are you sure you want to delete this expense?')" class="text-red-400 hover:text-red-600 transition-colors" title="Delete">
+                                <button onclick="confirmDelete('<?= $exp['id'] ?>', '<?= htmlspecialchars($exp['description'], ENT_QUOTES) ?>', '₹<?= number_format($exp['amount'], 2) ?>')" class="text-red-400 hover:text-red-600 transition-colors" title="Delete">
                                     <i class="fa-solid fa-trash-can"></i>
-                                </a>
+                                </button>
                             </td>
                             <?php endif; ?>
                         </tr>
@@ -249,4 +249,48 @@ function clearFile(e) {
     placeholder.style.display = 'flex';
     fileInfo.style.display = 'none';
 }
+
+// Delete confirmation modal
+function confirmDelete(id, desc, amount) {
+    document.getElementById('deleteExpDesc').textContent = desc;
+    document.getElementById('deleteExpAmount').textContent = amount;
+    document.getElementById('deleteConfirmBtn').href = 'index.php?page=expense_delete&id=' + id;
+    const modal = document.getElementById('deleteModal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.querySelector('.delete-modal-box').classList.add('scale-100'), 10);
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.querySelector('.delete-modal-box').classList.remove('scale-100');
+    setTimeout(() => modal.style.display = 'none', 200);
+}
 </script>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" style="display:none" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+    <div class="delete-modal-box bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl scale-95 transition-transform duration-200">
+        <div class="p-6 text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-1">Delete Expense?</h3>
+            <p class="text-sm text-gray-500 mb-4">This action cannot be undone.</p>
+            
+            <div class="bg-gray-50 rounded-lg p-3 mb-6 text-left">
+                <p class="text-xs text-gray-400 font-bold uppercase mb-1">Expense Details</p>
+                <p id="deleteExpDesc" class="text-sm font-semibold text-gray-800"></p>
+                <p id="deleteExpAmount" class="text-sm font-bold text-red-600 mt-1"></p>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-colors">
+                    Cancel
+                </button>
+                <a id="deleteConfirmBtn" href="#" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-trash-can"></i> Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
