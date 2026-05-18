@@ -312,6 +312,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'expense_add') {
     }
 }
 
+// Handle Expense Delete
+if ($page === 'expense_delete' && isset($_GET['id'])) {
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+        // Delete attachment file if exists
+        $expense = $db->fetch("SELECT attachment FROM \"Expense\" WHERE id = ?", [$_GET['id']]);
+        if ($expense && !empty($expense['attachment'])) {
+            $filePath = __DIR__ . '/uploads/expenses/' . $expense['attachment'];
+            if (file_exists($filePath)) unlink($filePath);
+        }
+        $db->query("DELETE FROM \"Expense\" WHERE id = ?", [$_GET['id']]);
+        header("Location: index.php?page=expenses&status=deleted");
+        exit;
+    }
+}
+
 // Handle Task Add
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'task_add') {
     if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {

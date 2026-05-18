@@ -87,6 +87,9 @@ if ($isAdmin) {
                         <?php endif; ?>
                         <th class="px-6 py-3 font-semibold text-center">File</th>
                         <th class="px-6 py-3 font-semibold text-center">Status</th>
+                        <?php if ($isAdmin): ?>
+                        <th class="px-6 py-3 font-semibold text-center">Action</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -117,11 +120,18 @@ if ($isAdmin) {
                             <td class="px-6 py-4 text-center">
                                 <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase"><?= htmlspecialchars($exp['status']) ?></span>
                             </td>
+                            <?php if ($isAdmin): ?>
+                            <td class="px-6 py-4 text-center">
+                                <a href="index.php?page=expense_delete&id=<?= $exp['id'] ?>" onclick="return confirm('Are you sure you want to delete this expense?')" class="text-red-400 hover:text-red-600 transition-colors" title="Delete">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                            </td>
+                            <?php endif; ?>
                         </tr>
                         <?php endforeach;
                     else: ?>
                         <tr>
-                            <td colspan="<?= $isAdmin ? '8' : '7' ?>" class="px-6 py-12 text-center text-gray-400">
+                            <td colspan="<?= $isAdmin ? '9' : '7' ?>" class="px-6 py-12 text-center text-gray-400">
                                 <i class="fa-solid fa-folder-open text-3xl mb-3"></i>
                                 <p class="text-sm"><?= $isAdmin ? 'No expenses recorded yet.' : 'No expenses added by you today.' ?></p>
                             </td>
