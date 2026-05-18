@@ -13,6 +13,12 @@ function isWithinSlot($start, $end) {
 // Fetch existing logs for today
 $logs = $db->fetchAll("SELECT a.*, u.username FROM \"Attendance\" a JOIN \"User\" u ON a.\"userId\" = u.id WHERE DATE(a.timestamp) = ? ORDER BY a.timestamp DESC", [$today]);
 $myLogs = array_filter($logs, fn($l) => $l['userId'] === $userId);
+
+// Slot definitions
+$slots = [
+    1 => ['name' => 'Half Day', 'icon' => 'fa-cloud-sun', 'iconBg' => 'bg-amber-100', 'iconColor' => 'text-amber-600', 'desc' => 'Morning shift only', 'start' => $settings['slot1_start'], 'end' => $settings['slot1_end']],
+    2 => ['name' => 'Full Day', 'icon' => 'fa-sun', 'iconBg' => 'bg-blue-100', 'iconColor' => 'text-blue-600', 'desc' => 'Entire working day', 'start' => $settings['slot2_start'], 'end' => $settings['slot2_end']],
+];
 ?>
 
 <div class="space-y-6">
@@ -34,35 +40,38 @@ $myLogs = array_filter($logs, fn($l) => $l['userId'] === $userId);
         </div>
     </div>
 
-    <!-- Attendance Slot Cards (For Everyone) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <?php for ($i = 1; $i <= 3; $i++): 
-            $start = $settings["slot{$i}_start"];
-            $end = $settings["slot{$i}_end"];
-            $isActive = isWithinSlot($start, $end);
-            $hasLog = !empty(array_filter($myLogs, fn($l) => (int)$l['slot'] === $i));
+    <!-- Attendance Slot Cards (Half Day / Full Day) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <?php foreach ($slots as $slotNum => $slot):
+            $isActive = isWithinSlot($slot['start'], $slot['end']);
+            $hasLog = !empty(array_filter($myLogs, fn($l) => (int)$l['slot'] === $slotNum));
         ?>
         <div class="bg-white rounded-xl border <?= $hasLog ? 'border-emerald-200 bg-emerald-50/30' : ($isActive ? 'border-blue-200 shadow-lg shadow-blue-900/5' : 'border-gray-200 opacity-60') ?> overflow-hidden transition-all">
             <div class="p-5">
                 <div class="flex items-center justify-between mb-4">
-                    <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Slot <?= $i ?></span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 <?= $slot['iconBg'] ?> <?= $slot['iconColor'] ?> rounded-lg flex items-center justify-center">
+                            <i class="fa-solid <?= $slot['icon'] ?> text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800"><?= $slot['name'] ?></h3>
+                            <p class="text-[11px] text-gray-400"><?= $slot['desc'] ?></p>
+                        </div>
+                    </div>
                     <?php if ($hasLog): ?>
                         <span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">COMPLETED</span>
                     <?php elseif ($isActive): ?>
                         <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold animate-pulse">ACTIVE NOW</span>
                     <?php endif; ?>
                 </div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">
-                    <?= $i === 1 ? 'Morning' : ($i === 2 ? 'Afternoon' : 'Evening') ?> Shift
-                </h3>
-                <p class="text-xs text-gray-500 mb-6"><?= date('h:i A', strtotime($start)) ?> - <?= date('h:i A', strtotime($end)) ?></p>
+                <p class="text-xs text-gray-500 mb-6"><?= date('h:i A', strtotime($slot['start'])) ?> - <?= date('h:i A', strtotime($slot['end'])) ?></p>
 
                 <?php if ($hasLog): ?>
                     <div class="flex items-center gap-2 text-emerald-600 text-sm font-semibold">
-                        <i class="fa-solid fa-circle-check"></i> Marked at <?= date('h:i A', strtotime(array_values(array_filter($myLogs, fn($l) => (int)$l['slot'] === $i))[0]['timestamp'])) ?>
+                        <i class="fa-solid fa-circle-check"></i> Marked at <?= date('h:i A', strtotime(array_values(array_filter($myLogs, fn($l) => (int)$l['slot'] === $slotNum))[0]['timestamp'])) ?>
                     </div>
                 <?php elseif ($isActive): ?>
-                    <button onclick="openAttendanceModal(<?= $i ?>)" class="w-full bg-[#1a7eb5] text-white py-3 rounded-lg font-bold text-sm hover:bg-[#156695] transition-colors shadow-lg shadow-blue-900/20">
+                    <button onclick="openAttendanceModal(<?= $slotNum ?>)" class="w-full bg-[#1a7eb5] text-white py-3 rounded-lg font-bold text-sm hover:bg-[#156695] transition-colors shadow-lg shadow-blue-900/20">
                         Mark Attendance
                     </button>
                 <?php else: ?>
@@ -72,7 +81,7 @@ $myLogs = array_filter($logs, fn($l) => $l['userId'] === $userId);
                 <?php endif; ?>
             </div>
         </div>
-        <?php endfor; ?>
+        <?php endforeach; ?>
     </div>
     </div>
 
@@ -87,7 +96,7 @@ $myLogs = array_filter($logs, fn($l) => $l['userId'] === $userId);
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-200 text-gray-600">
                         <th class="px-6 py-3 font-semibold">Staff</th>
-                        <th class="px-6 py-3 font-semibold text-center">Slot</th>
+                        <th class="px-6 py-3 font-semibold text-center">Type</th>
                         <th class="px-6 py-3 font-semibold">Time</th>
                         <th class="px-6 py-3 font-semibold text-center">Photo</th>
                         <th class="px-6 py-3 font-semibold text-center">Location</th>
@@ -108,7 +117,11 @@ $myLogs = array_filter($logs, fn($l) => $l['userId'] === $userId);
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-[10px] font-bold">SLOT <?= $log['slot'] ?></span>
+                                <?php if ((int)$log['slot'] === 1): ?>
+                                    <span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">HALF DAY</span>
+                                <?php else: ?>
+                                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold">FULL DAY</span>
+                                <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 text-gray-500 font-medium">
                                 <?= date('h:i A', strtotime($log['timestamp'])) ?>
@@ -147,6 +160,11 @@ $myLogs = array_filter($logs, fn($l) => $l['userId'] === $userId);
                 <button onclick="closeAttendanceModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
+            <!-- Attendance Type Indicator -->
+            <div id="modal-type-badge" class="mb-4 text-center">
+                <span id="modal-type-label" class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold"></span>
+            </div>
+
             <!-- Camera Preview -->
             <div class="relative aspect-video bg-gray-900 rounded-xl overflow-hidden mb-6 group">
                 <video id="video" class="w-full h-full object-cover" autoplay playsinline></video>
@@ -192,11 +210,22 @@ const canvas = document.getElementById('canvas');
 const captureBtn = document.getElementById('captureBtn');
 const locationStatus = document.getElementById('location-status');
 
+const slotLabels = {
+    1: { name: 'Half Day', bg: 'bg-amber-100', color: 'text-amber-700' },
+    2: { name: 'Full Day', bg: 'bg-blue-100', color: 'text-blue-700' }
+};
+
 async function openAttendanceModal(slot) {
     document.getElementById('modal-slot').value = slot;
     const modal = document.getElementById('attendanceModal');
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+
+    // Update type badge
+    const label = slotLabels[slot];
+    const badge = document.getElementById('modal-type-label');
+    badge.className = `inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold ${label.bg} ${label.color}`;
+    badge.innerHTML = `<i class="fa-solid ${slot === 1 ? 'fa-cloud-sun' : 'fa-sun'}"></i> ${label.name}`;
     
     // Start Camera
     try {

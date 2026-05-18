@@ -40,6 +40,8 @@ $db->query("CREATE TABLE IF NOT EXISTS \"AttendanceSettings\" (
     \"slot3_end\" TEXT
 )");
 
+// Migration: Drop unused slot3 columns if they exist (soft — we just ignore them in code)
+
 $db->query("CREATE TABLE IF NOT EXISTS \"Expense\" (
     \"id\" TEXT PRIMARY KEY,
     \"date\" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -209,8 +211,8 @@ if (!$adminCheck) {
 // Auto-seed default attendance settings
 $attendanceSettings = $db->fetch("SELECT * FROM \"AttendanceSettings\" LIMIT 1");
 if (!$attendanceSettings) {
-    $db->query("INSERT INTO \"AttendanceSettings\" (id, slot1_start, slot1_end, slot2_start, slot2_end, slot3_start, slot3_end) VALUES (?, ?, ?, ?, ?, ?, ?)", [
-        'default', '08:00', '12:00', '13:00', '15:00', '17:00', '21:00'
+    $db->query("INSERT INTO \"AttendanceSettings\" (id, slot1_start, slot1_end, slot2_start, slot2_end) VALUES (?, ?, ?, ?, ?)", [
+        'default', '08:00', '13:00', '08:00', '21:00'
     ]);
 }
 
@@ -267,10 +269,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'attendance_submit') {
 // Handle Attendance Settings Update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $page === 'update_attendance_settings') {
     if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
-        $db->query("UPDATE \"AttendanceSettings\" SET slot1_start=?, slot1_end=?, slot2_start=?, slot2_end=?, slot3_start=?, slot3_end=? WHERE id='default'", [
+        $db->query("UPDATE \"AttendanceSettings\" SET slot1_start=?, slot1_end=?, slot2_start=?, slot2_end=? WHERE id='default'", [
             $_POST['slot1_start'], $_POST['slot1_end'],
-            $_POST['slot2_start'], $_POST['slot2_end'],
-            $_POST['slot3_start'], $_POST['slot3_end']
+            $_POST['slot2_start'], $_POST['slot2_end']
         ]);
         header("Location: index.php?page=attendance_settings&status=updated");
         exit;
