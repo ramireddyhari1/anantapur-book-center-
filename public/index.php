@@ -591,6 +591,9 @@ switch ($page) {
     case 'upload':
         include __DIR__ . '/../views/upload.php';
         break;
+    case 'profile':
+        include __DIR__ . '/../views/profile.php';
+        break;
     default:
         echo "<div class='py-40 text-center'><h1 class='text-6xl font-black italic tracking-tighter opacity-20 uppercase'>Page Not <span class='text-[#800000]'>Found</span></h1></div>";
         break;

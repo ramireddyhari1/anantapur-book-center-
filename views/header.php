@@ -351,11 +351,12 @@
 
         <div class="flex items-center gap-6 ml-auto">
             <i class="fa-solid fa-gear text-gray-500 cursor-pointer"></i>
-            <div class="flex items-center gap-2">
+            <a href="index.php?page=profile" class="flex items-center gap-2 hover:opacity-80 transition-opacity" title="My Profile">
                 <div class="w-8 h-8 rounded-full bg-[#800000] text-white flex items-center justify-center font-bold text-xs">
                     <?= strtoupper(substr($_SESSION['username'] ?? 'U', 0, 2)) ?>
                 </div>
                 <span class="text-xs font-bold text-gray-600"><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></span>
+            </a>
                 <a href="index.php?page=logout" class="ml-3 text-gray-400 hover:text-red-600 transition-colors" title="Logout">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </a>
